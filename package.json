@@ -1,0 +1,25 @@
+{
+  "name": "audio2text",
+  "version": "1.0.0",
+  "description": "Converts mp3 audio to text using Google Speech to Text recognition",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@google-cloud/speech": "^4.1.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yashbeer/audio2text.git"
+  },
+  "keywords": [
+    "google speech to text conversion"
+  ],
+  "author": "Yashbeer",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yashbeer/audio2text/issues"
+  },
+  "homepage": "https://github.com/yashbeer/audio2text#readme"
+}
