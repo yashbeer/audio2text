@@ -1,10 +1,16 @@
-const path = require("path");
+const path = require('path');
 const axios = require('axios');
+const settings = require('./settings');
 
 module.exports = {
-    
+    // Input:  url
+    // Output: text
     recognize: function(params) {
         return new Promise(async (resolve, reject) => {
+            
+            if(!settings) {
+                reject({error:'GCS Credentials not supplied'});
+            }
             
             // Imports the Google Cloud client library
             const speech = require('@google-cloud/speech');
@@ -12,8 +18,8 @@ module.exports = {
             
             // Creates a client
             const client = new speech.SpeechClient({
-                projectId: 'frapp-dev',
-                keyFilename: path.resolve(__dirname,'frapp-dev-87e6d3c7d30a.json')
+                projectId: process.env.GCS_PROJECT_ID,
+                keyFilename: path.resolve(__dirname,'audio2text-gcs-keys.json')
             });
             
             // Fetch audio from a hosted url
@@ -54,7 +60,7 @@ module.exports = {
             
             //console.log(`Transcription: ${transcription}`);
             
-            resolve(transcription)
+            resolve(transcription);
         })
     }
     

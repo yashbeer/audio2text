@@ -1,6 +1,6 @@
 {
   "name": "audio2text",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Converts mp3 audio to text using Google Speech to Text recognition",
   "main": "index.js",
   "scripts": {
