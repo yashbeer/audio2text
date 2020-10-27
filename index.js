@@ -8,8 +8,8 @@ module.exports = {
     recognize: function(params) {
         return new Promise(async (resolve, reject) => {
             
-            if(!settings) {
-                reject({error:'GCS Credentials not supplied'});
+            if(!settings.validate_credentials()) {
+                reject({error:'GCS Credentials not provided'});
             }
             
             // Imports the Google Cloud client library
