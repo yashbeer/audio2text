@@ -7,61 +7,81 @@ module.exports = {
     // Output: text
     recognize: function(params) {
         return new Promise(async (resolve, reject) => {
-            
-            if(!settings.validate_credentials()) {
-                reject({error:'GCS Credentials not provided'});
-            }
-            
-            // Imports the Google Cloud client library
-            const speech = require('@google-cloud/speech');
-            const fs = require('fs');
-            
-            // Creates a client
-            const client = new speech.SpeechClient({
-                projectId: process.env.GCS_PROJECT_ID,
-                keyFilename: path.resolve(__dirname,'audio2text-gcs-keys.json')
-            });
-            
-            // Fetch audio from a hosted url
-            try {
-                var audioBytes =  await  axios.get(params.url, {
-                    responseType: 'arraybuffer'
-                })
-                .then(response => new Buffer.from(response.data, 'binary').toString('base64'))
+            try
+            {
+                if(!settings.validate_credentials()) {
+                    reject({error:'GCS Credentials not provided'});
+                }
                 
-            } catch (e) {
-                return {error: e};
+                // Imports the Google Cloud client library
+                const speech = require('@google-cloud/speech');
+                const fs = require('fs');
+                
+                // Creates a client
+                const client = new speech.SpeechClient({
+                    projectId: process.env.GCS_PROJECT_ID,
+                    keyFilename: path.resolve(__dirname,'audio2text-gcs-keys.json')
+                });
+                // console.log(params)
+                const config = {
+                    encoding: 'MP3',
+                    sampleRateHertz: 8000,
+                    languageCode: 'en-IN',
+                };
+                let transcription,runningLength='short';
+                /*
+                    ---params----
+                    url:normal or google cloud url
+                    runningLength:short,long
+                */
+                // Fetch audio from a hosted url
+
+                //if duration is gt 60 seconds use async flow or else use sync flow
+                if(params.runningLength)runningLength=params.runningLength;
+                if(runningLength==='short')
+                {
+                    //sync flow
+                    var audioBytes =  await  axios.get(params.url, {
+                        responseType: 'arraybuffer'
+                    })
+                    .then(response => new Buffer.from(response.data, 'binary').toString('base64'));
+                    const audio = {content: audioBytes};
+                
+                    const request = {
+                        audio: audio,
+                        config: config
+                    };
+            
+                    // Detects speech in the audio file
+                    const [response] = await client.recognize(request);
+                    transcription = response.results
+                    .map(result => result.alternatives[0].transcript)
+                    .join('\n');
+                }
+                else
+                {
+                    //async flow
+                    const audio = {uri: params.url};
+
+                    const request = {
+                      config: config,
+                      audio: audio
+                    };
+                    // Detects speech in the audio file. This creates a recognition job that you
+                    // can wait for now, or get its result later.
+                    const [operation] = await client.longRunningRecognize(request);
+                    // Get a Promise representation of the final result of the job
+                    const [response] = await operation.promise();
+                    transcription = response.results
+                      .map(result => result.alternatives[0].transcript)
+                      .join('\n');
+                }
+                resolve(transcription);
             }
-            
-            // Reads a local audio file and converts it to base64
-            //const fileName = path.resolve(__dirname, 'a06959ab7c89fa7b88e0bdff26081492.mp3');
-            //const file = fs.readFileSync(fileName);
-            //const audioBytes = file.toString('base64');
-            
-            // The audio file's encoding, sample rate in hertz, and BCP-47 language code
-            const audio = {
-                content: audioBytes,
-            };
-            const config = {
-                encoding: 'MP3',
-                sampleRateHertz: 8000,
-                languageCode: 'en-IN',
-            };
-            const request = {
-                audio: audio,
-                config: config,
-            };
-            
-            // Detects speech in the audio file
-            const [response] = await client.recognize(request);
-            const transcription = response.results
-            .map(result => result.alternatives[0].transcript)
-            .join('\n');
-            
-            //console.log(`Transcription: ${transcription}`);
-            
-            resolve(transcription);
+            catch(error)
+            {
+                reject(error);
+            }
         })
     }
-    
 }
