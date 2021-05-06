@@ -19,13 +19,19 @@ To run this project, you'll need to set following environment variables -
 `GOOGLE_VOICE2TEXT_PRIVATE_KEY`, `GOOGLE_VOICE2TEXT_CLIENT_EMAIL`, and `GCS_PROJECT_ID`
 
 
+
 ## Using the library
+
+If an audio duration is longer than 1 minute then use attribute `runningLength:long`
+
+Default value for `runningLength` is `short`.
 
 ```
 const audio2text = require('audio2text');
 
 const params = {
-    url: 'https://storage.googleapis.com/assets.frapp.in/WhatsApp-Ptt-2020-10-16-at-6.02.22-PM.mp3'
+    url: 'https://storage.googleapis.com/assets.frapp.in/WhatsApp-Ptt-2020-10-16-at-6.02.22-PM.mp3',
+    runningLength:'short'
 }
 audio2text.recognize(params).then(transcript => {
 	console.log(transcript)
